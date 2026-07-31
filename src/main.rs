@@ -1,6 +1,16 @@
-use std::process::Command;
+use std::process::{Command, Stdio};
 
 use evdev::{Device, EventSummary, KeyCode, LedCode};
+
+fn launch(command: &str, args: Option<&[&str]>) -> std::io::Result<()> {
+    Command::new(command)
+        .args(args.unwrap_or(&[]))
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()?;
+
+    Ok(())
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut device = Device::open("/dev/input/event3")?;
@@ -22,17 +32,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 if macro_mode && value == 1 {
                     match key {
                         KeyCode::KEY_KP0 => {
-                            Command::new("ulauncher-toggle").spawn()?;
+                            launch("ulauncher-toggle", None)?;
                         }
                         KeyCode::KEY_KP1 => {
-                            Command::new("firefox").spawn()?;
+                            launch("firefox", None)?;
                         }
                         KeyCode::KEY_KP2 => {
-                            Command::new("gnome-text-editor").spawn()?;
+                            launch("gnome-text-editor", None)?;
                         }
-                        // KeyCode::KEY_KP3 => {
-                        //     Command::new("xdg-open ~").spawn()?;
-                        // }
+                        KeyCode::KEY_KP3 => {
+                            let home = std::env::var("HOME")?;
+
+                            launch("xdg-open", Some(&[&home]))?;
+                        }
                         _ => {}
                     }
                 }
