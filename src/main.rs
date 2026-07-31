@@ -25,8 +25,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             Command::new("ulauncher-toggle").spawn()?;
                         }
                         KeyCode::KEY_KP1 => {
-                            Command::new("ls").spawn()?;
+                            Command::new("firefox").spawn()?;
                         }
+                        KeyCode::KEY_KP2 => {
+                            Command::new("gnome-text-editor").spawn()?;
+                        }
+                        // KeyCode::KEY_KP3 => {
+                        //     Command::new("xdg-open ~").spawn()?;
+                        // }
                         _ => {}
                     }
                 }
