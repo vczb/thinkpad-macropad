@@ -1,27 +1,31 @@
 use std::process::Command;
 
-use evdev::{Device, EventSummary, KeyCode};
+use evdev::{Device, EventSummary, KeyCode, LedCode};
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut device = Device::open("/dev/input/event3")?;
 
-    let mut macro_mode = false;
+    let leds = device.get_led_state()?;
+
+    let mut macro_mode = !leds.contains(LedCode::LED_NUML);
+
     loop {
         for event in device.fetch_events()? {
             if let EventSummary::Key(_, key, value) = event.destructure() {
-                match key {
-                    KeyCode::KEY_NUMLOCK => {
-                        macro_mode = value == 0;
-                    }
-                    _ => {}
+                if key == KeyCode::KEY_NUMLOCK && value == 0 {
+                    macro_mode = !macro_mode;
+                    continue;
                 }
-                if macro_mode {
+
+                // println!("Key: {:?}, Value: {}, Macro {}", key, value, macro_mode);
+
+                if macro_mode && value == 1 {
                     match key {
                         KeyCode::KEY_KP0 => {
-                            println!("Key: {:?}, Value: {}", key, value);
-                            // Command::new("ulauncher-toggle").spawn()?;
+                            Command::new("ulauncher-toggle").spawn()?;
                         }
                         KeyCode::KEY_KP1 => {
-                            Command::new("firefox").spawn()?;
+                            Command::new("ls").spawn()?;
                         }
                         _ => {}
                     }
